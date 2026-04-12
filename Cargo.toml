@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "aro-plugin-sdk",
+    "aro-plugin-sdk-macros",
+]
+resolver = "2"

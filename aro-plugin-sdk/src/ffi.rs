@@ -22,7 +22,7 @@ use std::os::raw::c_char;
 
 use serde_json::{json, Value};
 
-use crate::error::{PluginError, PluginErrorCode, PluginResult};
+use crate::error::{PluginErrorCode, PluginResult};
 use crate::input::Input;
 use crate::output::Output;
 
@@ -187,6 +187,7 @@ pub fn make_error_value(code: PluginErrorCode, message: &str) -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::error::PluginError;
     use serde_json::json;
     use std::ffi::CString;
 

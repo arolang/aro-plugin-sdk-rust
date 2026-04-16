@@ -321,8 +321,8 @@ pub fn aro_export(input: TokenStream) -> TokenStream {
     let expanded = quote! {
         #[no_mangle]
         pub extern "C" fn aro_plugin_info() -> *mut ::std::os::raw::c_char {
-            let actions_json = vec![#(#action_consts),*];
-            let qualifiers_json = vec![#(#qualifier_consts),*];
+            let actions_json: Vec<&str> = vec![#(#action_consts),*];
+            let qualifiers_json: Vec<&str> = vec![#(#qualifier_consts),*];
 
             let actions_str = actions_json.join(",");
             let qualifiers_str = qualifiers_json.join(",");

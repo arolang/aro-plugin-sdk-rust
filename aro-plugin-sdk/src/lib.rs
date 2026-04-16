@@ -4,68 +4,31 @@
 //!
 //! ## Quick start
 //!
-//! Add to your `Cargo.toml`:
 //! ```toml
 //! [dependencies]
-//! aro-plugin-sdk = "0.1"
+//! aro-plugin-sdk = { git = "https://github.com/arolang/aro-plugin-sdk-rust.git", branch = "main" }
 //! serde_json = "1.0"
 //!
 //! [lib]
 //! crate-type = ["cdylib"]
 //! ```
 //!
-//! Implement the four required C ABI exports:
+//! ```rust,ignore
+//! use aro_plugin_sdk::prelude::*;
 //!
-//! ```rust,no_run
-//! use std::os::raw::c_char;
-//! use aro_plugin_sdk::{ffi, Input, Output, PluginError, PluginResult};
-//! use serde_json::json;
-//!
-//! #[no_mangle]
-//! pub extern "C" fn aro_plugin_info() -> *mut c_char {
-//!     ffi::to_c_string(json!({
-//!         "name": "my-plugin",
-//!         "version": "1.0.0",
-//!         "handle": "MyPlugin",
-//!         "actions": [
-//!             {
-//!                 "name": "greet",
-//!                 "verbs": ["greet"],
-//!                 "role": "own",
-//!                 "prepositions": ["from"],
-//!                 "description": "Greet a person"
-//!             }
-//!         ]
-//!     }).to_string())
+//! #[action(name = "Greet", verbs = ["greet"], role = "own",
+//!          prepositions = ["with"], description = "Greet someone")]
+//! fn greet(input: &Input) -> PluginResult<Output> {
+//!     let name = input.string("name").unwrap_or("World");
+//!     Ok(Output::new().set("greeting", json!(format!("Hello, {name}!"))))
 //! }
 //!
-//! #[no_mangle]
-//! pub extern "C" fn aro_plugin_execute(
-//!     action: *const c_char,
-//!     input_json: *const c_char,
-//! ) -> *mut c_char {
-//!     ffi::wrap_execute(action, input_json, |action, input| match action {
-//!         "greet" => {
-//!             let name = input.string("name").unwrap_or("World");
-//!             Ok(Output::new().set("greeting", json!(format!("Hello, {name}!"))))
-//!         }
-//!         _ => Err(PluginError::internal(format!("Unknown action: {action}"))),
-//!     })
-//! }
-//!
-//! #[no_mangle]
-//! pub extern "C" fn aro_plugin_qualifier(
-//!     qualifier: *const c_char,
-//!     input_json: *const c_char,
-//! ) -> *mut c_char {
-//!     ffi::wrap_qualifier(qualifier, input_json, |_, _| {
-//!         Err(PluginError::internal("No qualifiers registered"))
-//!     })
-//! }
-//!
-//! #[no_mangle]
-//! pub extern "C" fn aro_plugin_free(ptr: *mut c_char) {
-//!     ffi::free_c_string(ptr);
+//! aro_export! {
+//!     name: "my-plugin",
+//!     version: "1.0.0",
+//!     handle: "My",
+//!     actions: [greet],
+//!     qualifiers: [],
 //! }
 //! ```
 
@@ -77,8 +40,11 @@ pub mod output;
 pub mod qualifier;
 pub mod testing;
 
-// Re-export macros from the companion crate
-pub use aro_plugin_sdk_macros::{action, aro_plugin, init, on_event, qualifier as qualifier_macro, shutdown, system_object};
+// Re-export proc macros
+pub use aro_plugin_sdk_macros::{
+    action, aro_plugin, init, on_event, qualifier as qualifier_attr,
+    shutdown, system_object, aro_export,
+};
 
 // Flat re-exports for convenience
 pub use error::{PluginError, PluginErrorCode, PluginResult};
@@ -99,5 +65,6 @@ pub mod prelude {
     pub use crate::input::Input;
     pub use crate::output::Output;
     pub use crate::qualifier::Params;
+    pub use aro_plugin_sdk_macros::{action, aro_export, qualifier as qualifier_attr};
     pub use serde_json::{json, Value};
 }

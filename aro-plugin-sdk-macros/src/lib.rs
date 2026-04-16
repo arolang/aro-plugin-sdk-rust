@@ -273,10 +273,9 @@ pub fn aro_export(input: TokenStream) -> TokenStream {
         .map(|f| {
             let fn_ident = f;
             let kebab = f.to_string().replace('_', "-");
-            // Also match the original function name
             let raw = f.to_string();
             quote! {
-                #kebab | #raw => #fn_ident(input),
+                #kebab | #raw => #fn_ident(&input),
             }
         })
         .collect();
@@ -290,7 +289,7 @@ pub fn aro_export(input: TokenStream) -> TokenStream {
             let kebab = name_str.replace('_', "-");
             let raw = name_str.clone();
             quote! {
-                #kebab | #raw => #fn_ident(input),
+                #kebab | #raw => #fn_ident(&input),
             }
         })
         .collect();
